@@ -501,7 +501,7 @@ function syncBarShow(msg,type){
 }
 var SP_CLIENT_ID='f75282d0-6941-4ada-91c4-cba12971db6f';
 var SP_TENANT_ID='bdd12a5b-05c5-4aa8-b29b-b868d1a922b3';
-var spToken=null, spMsal=null, spSaving=false;
+var spToken=null, spMsal=null, spSaving=false, spPending=false;
 var SP_SITE_ID=null, SP_DRIVE_ID=null;
 
 function spStartLogin(){
@@ -567,9 +567,28 @@ function spResolveDrive(){
     .then(function(d){ SP_DRIVE_ID=d.id; return d.id; });
 }
 function spFileUrl(){ return 'https://graph.microsoft.com/v1.0/drives/'+SP_DRIVE_ID+'/root:/Nefopam%20CRM/nefopam_crm_data.json'; }
+// Merge remote records into DATA.
+//  localWins=false -> remote overschrijft bestaande records (gebruikt bij ophalen, zo zie je collega-wijzigingen)
+//  localWins=true  -> alleen records die jij nog niet hebt worden toegevoegd (gebruikt vlak voor opslaan,
+//                     zo blijven jouw zojuist gemaakte wijzigingen staan maar verlies je geen nieuwe records van collega's)
+function spMerge(imported,localWins,doRender){
+  if(!(imported&&Array.isArray(imported))) return;
+  imported.forEach(ef);
+  imported.forEach(function(imp){
+    var ex=byId(imp.id);
+    if(ex){ if(!localWins) Object.assign(ex,imp); }
+    else { DATA.push(imp); }
+  });
+  try{localStorage.setItem(SK,JSON.stringify(DATA));}catch(e){}
+  if(doRender) render();
+}
+function spEnsureDrive(){
+  if(SP_DRIVE_ID) return Promise.resolve(SP_DRIVE_ID);
+  return spResolveSite().then(spResolveDrive);
+}
 function spLoad(){
   if(!spToken)return;
-  spResolveSite().then(spResolveDrive).then(function(){
+  spEnsureDrive().then(function(){
     syncBarShow('Data laden...','loading');
     return spApiGet(spFileUrl()+':/content');
   }).then(function(r){
@@ -577,33 +596,56 @@ function spLoad(){
     if(!r.ok) throw new Error('Laden mislukt (HTTP '+r.status+')');
     return r.json();
   }).then(function(imported){
-    if(imported&&Array.isArray(imported)&&imported.length>0){
-      imported.forEach(ef);
-      imported.forEach(function(imp){ var ex=byId(imp.id); if(ex){Object.assign(ex,imp);}else{DATA.push(imp);} });
-      try{localStorage.setItem(SK,JSON.stringify(DATA));}catch(e){}
-      render();
-    }
+    spMerge(imported,false,true);
     syncBarShow('Gesynchroniseerd \u2014 '+new Date().toLocaleTimeString('nl-NL',{hour:'2-digit',minute:'2-digit'}),'ok');
     setTimeout(function(){document.getElementById('syncBar').style.display='none';},4000);
   }).catch(function(e){ syncBarShow('Fout: '+e.message,'err'); });
 }
+// Haalt remote data op en mergt die in (collega-wijzigingen worden zichtbaar). silent=true voor de poll.
+function spPull(silent){
+  if(!spToken) return Promise.resolve();
+  return spEnsureDrive().then(function(){
+    return spApiGet(spFileUrl()+':/content');
+  }).then(function(r){
+    if(r.status===404) return null;
+    if(!r.ok) throw new Error('Laden mislukt (HTTP '+r.status+')');
+    return r.json();
+  }).then(function(imported){
+    spMerge(imported,false,true);
+    if(!silent){ syncBarShow('Bijgewerkt \u2014 '+new Date().toLocaleTimeString('nl-NL',{hour:'2-digit',minute:'2-digit'}),'ok'); setTimeout(function(){document.getElementById('syncBar').style.display='none';},4000); }
+  }).catch(function(e){ if(!silent) syncBarShow('Fout: '+e.message,'err'); });
+}
 function spSave(silent){
   if(!spToken){ if(!silent) showT('Niet verbonden'); return; }
-  if(spSaving)return;
+  if(spSaving){ spPending=true; return; } // er loopt al een save: deze wijziging na afloop opnieuw proberen
   if(!SP_DRIVE_ID){ spResolveSite().then(spResolveDrive).then(function(){spDoSave(silent);}).catch(function(e){syncBarShow('Fout: '+e.message,'err');}); }
   else { spDoSave(silent); }
+}
+function spFinishSave(){
+  spSaving=false;
+  if(spPending){ spPending=false; spSave(true); } // tussentijdse wijziging alsnog wegschrijven
 }
 function spDoSave(silent){
   spSaving=true;
   if(!silent) syncBarShow('Opslaan naar SharePoint...','loading');
-  fetch(spFileUrl()+':/content',{method:'PUT',headers:{Authorization:'Bearer '+spToken,'Content-Type':'application/json'},body:JSON.stringify(DATA)})
-    .then(function(r){
-      spSaving=false;
-      if(!r.ok) throw new Error('Opslaan mislukt (HTTP '+r.status+')');
-      if(!silent){ syncBarShow('Opgeslagen \u2014 '+new Date().toLocaleTimeString('nl-NL',{hour:'2-digit',minute:'2-digit'}),'ok'); setTimeout(function(){document.getElementById('syncBar').style.display='none';},4000); }
-    }).catch(function(e){ spSaving=false; syncBarShow('Fout: '+e.message,'err'); });
+  // Read-merge-write: eerst remote ophalen en collega-records mergen, dan pas het hele bestand schrijven.
+  // Voorkomt dat jouw save de wijzigingen van een collega overschrijft.
+  spApiGet(spFileUrl()+':/content').then(function(r){
+    if(r.status===404) return null;
+    if(!r.ok) throw new Error('Laden mislukt (HTTP '+r.status+')');
+    return r.json();
+  }).then(function(remote){
+    spMerge(remote,true,!silent); // bij stille save niet her-renderen (verstoort typen niet)
+    return fetch(spFileUrl()+':/content',{method:'PUT',headers:{Authorization:'Bearer '+spToken,'Content-Type':'application/json'},body:JSON.stringify(DATA)});
+  }).then(function(r){
+    if(!r.ok) throw new Error('Opslaan mislukt (HTTP '+r.status+')');
+    if(!silent){ syncBarShow('Opgeslagen \u2014 '+new Date().toLocaleTimeString('nl-NL',{hour:'2-digit',minute:'2-digit'}),'ok'); setTimeout(function(){document.getElementById('syncBar').style.display='none';},4000); }
+    spFinishSave();
+  }).catch(function(e){ syncBarShow('Fout: '+e.message,'err'); spFinishSave(); });
 }
-function spSync(){ spSave(false); }
+function spSync(){ if(!spToken){ showT('Niet verbonden'); return; } syncBarShow('Synchroniseren...','loading'); spPull(true).then(function(){ return spSave(false); }); }
+// Periodiek collega-wijzigingen ophalen (niet tijdens een lopende save).
+setInterval(function(){ if(spToken && !spSaving) spPull(true); }, 30000);
 function spCheckSetup(){}
 var tTmr;
 function showT(m){var t=document.getElementById('tst');t.textContent=m;t.classList.add('show');clearTimeout(tTmr);tTmr=setTimeout(function(){t.classList.remove('show');},2500);}
