@@ -378,9 +378,9 @@ function buildCard(d){
       +'</div>'
       +'<div class="pdet">'
         +'<div class="pdg">'
-          +'<div><div class="shlb">Status</div><select onchange="updProd('+d.id+','+pi+',"status",this.value)"><option value="">Geen status</option>'+sOpts+'</select></div>'
-          +'<div><div class="shlb">Datum</div><input type="date" value="'+esc(pd)+'" onchange="updProd('+d.id+','+pi+',"date",this.value)"></div>'
-          +'<div style="grid-column:1/-1"><div class="shlb">Notitie</div><textarea rows="2" style="width:100%;font-size:12px;font-family:inherit;border:1px solid #E2E8F0;border-radius:6px;padding:5px 8px;outline:none;resize:vertical" onchange="updProd('+d.id+','+pi+',"note",this.value)">'+esc(pno)+'</textarea></div>'
+          +'<div><div class="shlb">Status</div><select onchange="updProd('+d.id+','+pi+',\'status\',this.value)"><option value="">Geen status</option>'+sOpts+'</select></div>'
+          +'<div><div class="shlb">Datum</div><input type="date" value="'+esc(pd)+'" onchange="updProd('+d.id+','+pi+',\'date\',this.value)"></div>'
+          +'<div style="grid-column:1/-1"><div class="shlb">Notitie</div><textarea rows="2" style="width:100%;font-size:12px;font-family:inherit;border:1px solid #E2E8F0;border-radius:6px;padding:5px 8px;outline:none;resize:vertical" onchange="updProd('+d.id+','+pi+',\'note\',this.value)">'+esc(pno)+'</textarea></div>'
         +'</div>'
       +'</div>'
     +'</div>';
@@ -391,7 +391,7 @@ function buildCard(d){
   var amOpts=getAMs().map(function(a){return'<option>'+escT(a)+'</option>';}).join('');
   var litH=(d.literature||[]).map(function(l,li){return'<div class="litrow"><span class="litnm">'+esc(l.title)+'</span>'+(l.url?'<a href="'+esc(l.url)+'" target="_blank" style="font-size:11px;color:#059669;border:1px solid #6EE7B7;padding:2px 7px;border-radius:5px;text-decoration:none">Link</a>':'')+' <button class="btn brd" onclick="remLit('+d.id+','+li+')">x</button>'+(l.note?'<span class="litnote">'+esc(l.note)+'</span>':'')+'</div>';}).join('');
   var lchips=getLitLib().filter(function(t){return!(d.literature||[]).map(function(l){return l.title;}).includes(t);}).map(function(t){return'<button class="lchip" onclick="quickAddLit('+d.id+',this)" data-t="'+escT(t)+'">+'+escT(t)+'</button>';}).join('');
-  var shH=(d.stakeholders||[]).map(function(s,si){return'<div class="shc"><div class="shr"><div><div class="shlb">Naam</div><input class="shi" value="'+esc(s.name)+'" onchange="updSH('+d.id+','+si+',"name",this.value)" placeholder="Naam"></div><div><div class="shlb">Rol</div><input class="shi" value="'+esc(s.role)+'" onchange="updSH('+d.id+','+si+',"role",this.value)" placeholder="Rol"></div><div><div class="shlb">E-mail</div><input class="shi" value="'+esc(s.email)+'" onchange="updSH('+d.id+','+si+',"email",this.value)" placeholder="e-mail"></div><div><div class="shlb">&nbsp;</div><button class="btn brd" onclick="remSH('+d.id+','+si+')">x</button></div></div><div style="margin-top:5px"><div class="shlb">Laatste contact</div><input class="shi" style="width:55%" value="'+esc(s.last)+'" onchange="updSH('+d.id+','+si+',"last",this.value)" placeholder="bv. Mei 2026"></div></div>';}).join('');
+  var shH=(d.stakeholders||[]).map(function(s,si){return'<div class="shc"><div class="shr"><div><div class="shlb">Naam</div><input class="shi" value="'+esc(s.name)+'" onchange="updSH('+d.id+','+si+',\'name\',this.value)" placeholder="Naam"></div><div><div class="shlb">Rol</div><input class="shi" value="'+esc(s.role)+'" onchange="updSH('+d.id+','+si+',\'role\',this.value)" placeholder="Rol"></div><div><div class="shlb">E-mail</div><input class="shi" value="'+esc(s.email)+'" onchange="updSH('+d.id+','+si+',\'email\',this.value)" placeholder="e-mail"></div><div><div class="shlb">&nbsp;</div><button class="btn brd" onclick="remSH('+d.id+','+si+')">x</button></div></div><div style="margin-top:5px"><div class="shlb">Laatste contact</div><input class="shi" style="width:55%" value="'+esc(s.last)+'" onchange="updSH('+d.id+','+si+',\'last\',this.value)" placeholder="bv. Mei 2026"></div></div>';}).join('');
   return'<div class="card'+(oc[d.id]?' open':'')+'" id="cd-'+d.id+'">'
     +'<div class="chdr" onclick="tog('+d.id+')">'
       +'<span class="hn">'+esc(d.name)+'</span>'
@@ -402,15 +402,15 @@ function buildCard(d){
     +'</div>'
     +'<div class="cbody">'
       +'<div class="egrid">'
-        +'<div><div class="fl">Naam ziekenhuis</div><input class="ef" value="'+esc(d.name)+'" onchange="updF('+d.id+',"name",this.value)"></div>'
-        +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:7px"><div><div class="fl">Groep</div><select class="ef" onchange="updF('+d.id+',"group",this.value)">'+grpOpts+'</select></div><div><div class="fl">Sentiment</div><select class="ef" onchange="updF('+d.id+',"sentiment",this.value)"><option value="positief"'+(d.sentiment==='positief'?' selected':'')+'>Positief</option><option value="neutraal"'+(d.sentiment==='neutraal'?' selected':'')+'>Neutraal</option><option value="onduidelijk"'+(d.sentiment==='onduidelijk'?' selected':'')+'>Onduidelijk</option></select></div></div>'
-        +'<div><div class="fl">G-COM status</div><textarea class="ef" rows="2" onchange="updF('+d.id+',"gcom",this.value)">'+esc(d.gcom)+'</textarea></div>'
-        +'<div><div class="fl">Acties en follow-up</div><textarea class="ef" rows="3" onchange="updF('+d.id+',"actie",this.value)">'+esc(d.actie)+'</textarea></div>'
-        +'<div style="grid-column:1/-1"><div class="fl">Notities</div><textarea class="ef" rows="2" onchange="updF('+d.id+',"notes",this.value)">'+esc(d.notes)+'</textarea></div>'
+        +'<div><div class="fl">Naam ziekenhuis</div><input class="ef" value="'+esc(d.name)+'" onchange="updF('+d.id+',\'name\',this.value)"></div>'
+        +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:7px"><div><div class="fl">Groep</div><select class="ef" onchange="updF('+d.id+',\'group\',this.value)">'+grpOpts+'</select></div><div><div class="fl">Sentiment</div><select class="ef" onchange="updF('+d.id+',\'sentiment\',this.value)"><option value="positief"'+(d.sentiment==='positief'?' selected':'')+'>Positief</option><option value="neutraal"'+(d.sentiment==='neutraal'?' selected':'')+'>Neutraal</option><option value="onduidelijk"'+(d.sentiment==='onduidelijk'?' selected':'')+'>Onduidelijk</option></select></div></div>'
+        +'<div><div class="fl">G-COM status</div><textarea class="ef" rows="2" onchange="updF('+d.id+',\'gcom\',this.value)">'+esc(d.gcom)+'</textarea></div>'
+        +'<div><div class="fl">Acties en follow-up</div><textarea class="ef" rows="3" onchange="updF('+d.id+',\'actie\',this.value)">'+esc(d.actie)+'</textarea></div>'
+        +'<div style="grid-column:1/-1"><div class="fl">Notities</div><textarea class="ef" rows="2" onchange="updF('+d.id+',\'notes\',this.value)">'+esc(d.notes)+'</textarea></div>'
       +'</div>'
       +'<div class="sec"><div class="fl">Koppelingen</div>'
         +'<div class="hlnks">'+(web?'<a href="'+esc(web)+'" target="_blank" class="hlnk hlnkw">&#127760; Website</a>':'')+(maps?'<a href="'+esc(maps)+'" target="_blank" class="hlnk hlnkm">&#128205; Google Maps</a>':'')+'</div>'
-        +'<div class="lerow"><div><div class="shlb">Website URL</div><input value="'+esc(web)+'" placeholder="https://..." onchange="updF('+d.id+',"website",this.value)"></div><div><div class="shlb">Maps URL</div><input value="'+esc(maps)+'" placeholder="https://maps.google.com/..." onchange="updF('+d.id+',"maps",this.value)"></div></div>'
+        +'<div class="lerow"><div><div class="shlb">Website URL</div><input value="'+esc(web)+'" placeholder="https://..." onchange="updF('+d.id+',\'website\',this.value)"></div><div><div class="shlb">Maps URL</div><input value="'+esc(maps)+'" placeholder="https://maps.google.com/..." onchange="updF('+d.id+',\'maps\',this.value)"></div></div>'
       +'</div>'
       +'<div class="sec"><div class="fl">Accountmanagers</div><div style="margin-top:6px;display:flex;flex-wrap:wrap;gap:5px">'+amChips+'</div></div>'
       +'<div class="sec"><div class="fl">Producten</div><div style="margin-top:6px;min-height:24px">'+ptH+'</div>'+(pchips?'<div class="pchips">'+pchips+'</div>':'')+'<div class="par"><input type="text" id="pI-'+d.id+'" placeholder="Product toevoegen..."><button onclick="addProd('+d.id+')">+ Voeg toe</button></div></div>'
@@ -477,18 +477,18 @@ var SD0={title:'CRM Hospital Prolepha',sub:'Klik op een ziekenhuis om te bewerke
 function lSet(){try{var s=localStorage.getItem(SSK);if(s)return JSON.parse(s);}catch(e){}return JSON.parse(JSON.stringify(SD0));}
 function aSet(c){document.getElementById('hT').textContent=c.title||SD0.title;document.getElementById('hS').textContent=c.sub||SD0.sub;document.title=c.pagetitle||SD0.pagetitle;document.getElementById('mainHeader').style.background=c.color||SD0.color;}
 function toggleSettings(){var p=document.getElementById('setPanel');if(p.classList.toggle('open')){var c=lSet();document.getElementById('sT').value=c.title||'';document.getElementById('sS').value=c.sub||'';document.getElementById('sP').value=c.pagetitle||'';var sel=document.getElementById('sC');for(var i=0;i<sel.options.length;i++){if(sel.options[i].value===c.color){sel.selectedIndex=i;break;}}renderSetTags();}}
-function saveSet(){var cfg=lSet();cfg.title=document.getElementById('sT').value;cfg.sub=document.getElementById('sS').value;cfg.pagetitle=document.getElementById('sP').value;cfg.color=document.getElementById('sC').value;try{localStorage.setItem(SSK,JSON.stringify(cfg));}catch(e){}aSet(cfg);document.getElementById('setPanel').classList.remove('open');showT('Instellingen opgeslagen');renderAMFilter();render();}
+function saveSet(){var cfg=lSet();cfg.title=document.getElementById('sT').value;cfg.sub=document.getElementById('sS').value;cfg.pagetitle=document.getElementById('sP').value;cfg.color=document.getElementById('sC').value;try{localStorage.setItem(SSK,JSON.stringify(cfg));}catch(e){}spSaveSettings();aSet(cfg);document.getElementById('setPanel').classList.remove('open');showT('Instellingen opgeslagen');renderAMFilter();render();}
 function resetSet(){try{localStorage.removeItem(SSK);}catch(e){}aSet(SD0);document.getElementById('setPanel').classList.remove('open');showT('Instellingen hersteld');renderAMFilter();render();}
 function hardReset(){if(!confirm('Weet je zeker? Dit laadt alle originele data opnieuw.'))return;DATA=ld();sd();render();showT('Data hersteld');}
 function renderSetTags(){var cfg=lSet();var grps=cfg.groups||['Santeon','IZAAZ','Overig'];var prods=cfg.products||[];var ams=cfg.ams||['Peter de Vries','Miriam Meulenberg','Dennis van Overveld'];var litLib=cfg.litLib||[];var gl=document.getElementById('grpList');var pl=document.getElementById('prodSetList');var al=document.getElementById('amList');var ll=document.getElementById('litLibList');if(gl)gl.innerHTML=grps.map(function(g,i){return'<span class="stag grp">'+escT(g)+'<button onclick="remGrp('+i+')">&times;</button></span>';}).join('');if(pl)pl.innerHTML=prods.map(function(p,i){return'<span class="stag">'+escT(p)+'<button onclick="remProdSet('+i+')">&times;</button></span>';}).join('');if(al)al.innerHTML=ams.map(function(a,i){return'<span class="stag amb '+amCls(a)+'">'+escT(a)+'<button onclick="remAMSet('+i+')" style="background:none;border:none;cursor:pointer;font-size:13px;padding:0 0 0 4px">&times;</button></span>';}).join('');if(ll)ll.innerHTML=litLib.map(function(t,i){return'<span class="stag" style="background:#D1FAE5;color:#065F46">'+escT(t)+'<button onclick="remLitLib('+i+')">&times;</button></span>';}).join('');renderAMFilter();}
-function addGrp(){var i=document.getElementById('grpNew');var v=i.value.trim();if(!v)return;var c=lSet();c.groups=c.groups||['Santeon','IZAAZ','Overig'];if(c.groups.indexOf(v)===-1){c.groups.push(v);try{localStorage.setItem(SSK,JSON.stringify(c));}catch(e){}}i.value='';renderSetTags();render();}
-function remGrp(i){var c=lSet();c.groups=c.groups||['Santeon','IZAAZ','Overig'];if(c.groups.length<=1){showT('Minimaal 1 groep');return;}c.groups.splice(i,1);try{localStorage.setItem(SSK,JSON.stringify(c));}catch(e){}renderSetTags();}
-function addProdSet(){var i=document.getElementById('prodNew');var v=i.value.trim();if(!v)return;var c=lSet();c.products=c.products||[];if(c.products.indexOf(v)===-1){c.products.push(v);try{localStorage.setItem(SSK,JSON.stringify(c));}catch(e){}}i.value='';renderSetTags();}
-function remProdSet(i){var c=lSet();c.products=c.products||[];c.products.splice(i,1);try{localStorage.setItem(SSK,JSON.stringify(c));}catch(e){}renderSetTags();}
-function addAMSet(){var i=document.getElementById('amNew');var v=i.value.trim();if(!v)return;var c=lSet();c.ams=c.ams||['Peter de Vries','Miriam Meulenberg','Dennis van Overveld'];if(c.ams.indexOf(v)===-1){c.ams.push(v);try{localStorage.setItem(SSK,JSON.stringify(c));}catch(e){}}i.value='';renderSetTags();}
-function remAMSet(i){var c=lSet();c.ams=c.ams||['Peter de Vries','Miriam Meulenberg','Dennis van Overveld'];c.ams.splice(i,1);try{localStorage.setItem(SSK,JSON.stringify(c));}catch(e){}renderSetTags();}
-function addLitLib(){var i=document.getElementById('litNew');var v=i.value.trim();if(!v)return;var c=lSet();c.litLib=c.litLib||[];if(c.litLib.indexOf(v)===-1){c.litLib.push(v);try{localStorage.setItem(SSK,JSON.stringify(c));}catch(e){}}i.value='';renderSetTags();}
-function remLitLib(i){var c=lSet();c.litLib=c.litLib||[];c.litLib.splice(i,1);try{localStorage.setItem(SSK,JSON.stringify(c));}catch(e){}renderSetTags();}
+function addGrp(){var i=document.getElementById('grpNew');var v=i.value.trim();if(!v)return;var c=lSet();c.groups=c.groups||['Santeon','IZAAZ','Overig'];if(c.groups.indexOf(v)===-1){c.groups.push(v);try{localStorage.setItem(SSK,JSON.stringify(c));}catch(e){}spSaveSettings();}i.value='';renderSetTags();render();}
+function remGrp(i){var c=lSet();c.groups=c.groups||['Santeon','IZAAZ','Overig'];if(c.groups.length<=1){showT('Minimaal 1 groep');return;}c.groups.splice(i,1);try{localStorage.setItem(SSK,JSON.stringify(c));}catch(e){}spSaveSettings();renderSetTags();}
+function addProdSet(){var i=document.getElementById('prodNew');var v=i.value.trim();if(!v)return;var c=lSet();c.products=c.products||[];if(c.products.indexOf(v)===-1){c.products.push(v);try{localStorage.setItem(SSK,JSON.stringify(c));}catch(e){}spSaveSettings();}i.value='';renderSetTags();}
+function remProdSet(i){var c=lSet();c.products=c.products||[];c.products.splice(i,1);try{localStorage.setItem(SSK,JSON.stringify(c));}catch(e){}spSaveSettings();renderSetTags();}
+function addAMSet(){var i=document.getElementById('amNew');var v=i.value.trim();if(!v)return;var c=lSet();c.ams=c.ams||['Peter de Vries','Miriam Meulenberg','Dennis van Overveld'];if(c.ams.indexOf(v)===-1){c.ams.push(v);try{localStorage.setItem(SSK,JSON.stringify(c));}catch(e){}spSaveSettings();}i.value='';renderSetTags();}
+function remAMSet(i){var c=lSet();c.ams=c.ams||['Peter de Vries','Miriam Meulenberg','Dennis van Overveld'];c.ams.splice(i,1);try{localStorage.setItem(SSK,JSON.stringify(c));}catch(e){}spSaveSettings();renderSetTags();}
+function addLitLib(){var i=document.getElementById('litNew');var v=i.value.trim();if(!v)return;var c=lSet();c.litLib=c.litLib||[];if(c.litLib.indexOf(v)===-1){c.litLib.push(v);try{localStorage.setItem(SSK,JSON.stringify(c));}catch(e){}spSaveSettings();}i.value='';renderSetTags();}
+function remLitLib(i){var c=lSet();c.litLib=c.litLib||[];c.litLib.splice(i,1);try{localStorage.setItem(SSK,JSON.stringify(c));}catch(e){}spSaveSettings();renderSetTags();}
 function syncBarShow(msg,type){
   var bar=document.getElementById('syncBar');
   var dot=document.getElementById('syncDot');
@@ -567,6 +567,41 @@ function spResolveDrive(){
     .then(function(d){ SP_DRIVE_ID=d.id; return d.id; });
 }
 function spFileUrl(){ return 'https://graph.microsoft.com/v1.0/drives/'+SP_DRIVE_ID+'/root:/Nefopam%20CRM/nefopam_crm_data.json'; }
+function spSettingsUrl(){ return 'https://graph.microsoft.com/v1.0/drives/'+SP_DRIVE_ID+'/root:/Nefopam%20CRM/nefopam_crm_settings.json'; }
+// Mergt remote-instellingen in de lokale config. Lijsten (groepen/producten/AMs/litLib) worden samengevoegd
+// (dedupe), zodat toevoegingen van collega's nooit verloren gaan. Titel/kleur: remote wint indien gezet.
+function spMergeSettings(remote){
+  if(!remote||typeof remote!=='object') return;
+  var c=lSet();
+  ['groups','products','ams','litLib'].forEach(function(k){
+    var rem=remote[k]; if(!Array.isArray(rem)) return;
+    var loc=Array.isArray(c[k])?c[k]:[];
+    rem.forEach(function(v){ if(loc.indexOf(v)===-1) loc.push(v); });
+    c[k]=loc;
+  });
+  ['title','sub','pagetitle','color'].forEach(function(k){
+    if(remote[k]!==undefined && remote[k]!=='') c[k]=remote[k];
+  });
+  try{localStorage.setItem(SSK,JSON.stringify(c));}catch(e){}
+  aSet(c);
+}
+function spPullSettings(){
+  if(!spToken) return Promise.resolve();
+  return spEnsureDrive().then(function(){ return spApiGet(spSettingsUrl()+':/content'); })
+    .then(function(r){ if(r.status===404) return null; if(!r.ok) throw new Error('Instellingen laden mislukt (HTTP '+r.status+')'); return r.json(); })
+    .then(function(remote){ spMergeSettings(remote); renderAMFilter(); render(); })
+    .catch(function(e){});
+}
+// Read-merge-write voor instellingen: eerst remote ophalen en samenvoegen, dan schrijven.
+function spSaveSettings(){
+  if(!spToken) return;
+  spEnsureDrive().then(function(){ return spApiGet(spSettingsUrl()+':/content'); })
+    .then(function(r){ if(r.status===404||!r.ok) return null; return r.json(); })
+    .then(function(remote){
+      spMergeSettings(remote);
+      return fetch(spSettingsUrl()+':/content',{method:'PUT',headers:{Authorization:'Bearer '+spToken,'Content-Type':'application/json'},body:JSON.stringify(lSet())});
+    }).catch(function(e){});
+}
 // Merge remote records into DATA.
 //  localWins=false -> remote overschrijft bestaande records (gebruikt bij ophalen, zo zie je collega-wijzigingen)
 //  localWins=true  -> alleen records die jij nog niet hebt worden toegevoegd (gebruikt vlak voor opslaan,
@@ -597,6 +632,8 @@ function spLoad(){
     return r.json();
   }).then(function(imported){
     spMerge(imported,false,true);
+    return spPullSettings();
+  }).then(function(){
     syncBarShow('Gesynchroniseerd \u2014 '+new Date().toLocaleTimeString('nl-NL',{hour:'2-digit',minute:'2-digit'}),'ok');
     setTimeout(function(){document.getElementById('syncBar').style.display='none';},4000);
   }).catch(function(e){ syncBarShow('Fout: '+e.message,'err'); });
@@ -645,7 +682,7 @@ function spDoSave(silent){
 }
 function spSync(){ if(!spToken){ showT('Niet verbonden'); return; } syncBarShow('Synchroniseren...','loading'); spPull(true).then(function(){ return spSave(false); }); }
 // Periodiek collega-wijzigingen ophalen (niet tijdens een lopende save).
-setInterval(function(){ if(spToken && !spSaving) spPull(true); }, 30000);
+setInterval(function(){ if(spToken && !spSaving){ spPull(true); spPullSettings(); } }, 30000);
 function spCheckSetup(){}
 var tTmr;
 function showT(m){var t=document.getElementById('tst');t.textContent=m;t.classList.add('show');clearTimeout(tTmr);tTmr=setTimeout(function(){t.classList.remove('show');},2500);}
