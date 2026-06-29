@@ -2,6 +2,7 @@
 <html lang="nl">
 <head>
 <meta charset="UTF-8">
+<script src="https://unpkg.com/@azure/msal-browser@2.38.3/lib/msal-browser.min.js"></script>
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Nefopam CRM</title>
 <style>
@@ -521,15 +522,7 @@ function spCheckSetup(){
   // Auto-connect with pre-configured credentials
   document.getElementById('syncBar').style.display='flex';
   syncBarShow('Verbinden met SharePoint...','loading');
-  if(!window.msal){
-    var s=document.createElement('script');
-    s.src='https://alcdn.msauth.net/browser/2.38.3/js/msal-browser.min.js';
-    s.onload=function(){ spInitMSAL(); };
-    s.onerror=function(){ syncBarShow('MSAL niet geladen','err'); };
-    document.head.appendChild(s);
-  } else {
-    spInitMSAL();
-  }
+  spInitMSAL();
 }
 
 var SP_CLIENT_ID='f75282d0-6941-4ada-91c4-cba12971db6f';
