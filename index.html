@@ -626,8 +626,9 @@ function spHandleToken(resp){
 }
 
 function spUrl(){
-  return 'https://graph.microsoft.com/v1.0/sites/prolepha.sharepoint.com:/sites/ProlephaTeam:/drive/root:/'+
-    encodeURIComponent('Gedeelde documenten/Nefopam CRM/nefopam_crm_data.json');
+  // In Graph API, the document library root IS /drive/root
+  // So "Gedeelde documenten/Nefopam CRM/file.json" becomes just "Nefopam CRM/file.json"
+  return 'https://graph.microsoft.com/v1.0/sites/prolepha.sharepoint.com:/sites/ProlephaTeam:/drive/root:/Nefopam%20CRM/nefopam_crm_data.json';
 }
 
 function spLoad(){
