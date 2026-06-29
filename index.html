@@ -626,12 +626,13 @@ function spHandleToken(resp){
 }
 
 function spUrl(){
-  return 'https://graph.microsoft.com/v1.0/sites/prolepha.sharepoint.com:/sites/ProlephaTeam:/drive/root:/'+SP_FOLDER+'/'+SP_FILE;
+  return 'https://graph.microsoft.com/v1.0/sites/prolepha.sharepoint.com:/sites/ProlephaTeam:/drive/root:/'+
+    encodeURIComponent('Gedeelde documenten/Nefopam CRM/nefopam_crm_data.json');
 }
 
 function spLoad(){
   if(!spToken)return;
-  fetch(spUrl()+':/content',{headers:{Authorization:'Bearer '+spToken}})
+  fetch(spUrl()+':/content',{headers:{Authorization:'Bearer '+spToken,'Accept':'application/json'}})
     .then(function(r){
       if(r.status===404){ syncBarShow('Nieuw bestand aanmaken...','loading'); spSave(true); return null; }
       if(!r.ok) throw new Error('HTTP '+r.status);
@@ -663,7 +664,7 @@ function spSave(silent){
   if(!silent) syncBarShow('Opslaan naar SharePoint...','loading');
   fetch(spUrl()+':/content',{
     method:'PUT',
-    headers:{Authorization:'Bearer '+spToken,'Content-Type':'application/json'},
+    headers:{Authorization:'Bearer '+spToken,'Content-Type':'text/plain'},
     body:JSON.stringify(DATA)
   })
   .then(function(r){
